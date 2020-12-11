@@ -1,15 +1,25 @@
-package com.backend.model;
+// package com.backend.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+// // import javax.persistence.JoinColumn;
+// // import javax.persistence.ManyToOne;
+// import javax.persistence.Entity;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-public class Colaborador {
-    private Aluno aluno;
-    private String papel;
-}
+// import lombok.AllArgsConstructor;
+// import lombok.Builder;
+// import lombok.Data;
+// import lombok.NoArgsConstructor;
+// import lombok.NonNull;
+
+// @Data
+// @AllArgsConstructor
+// @NoArgsConstructor
+// @Entity
+// @Builder
+// public class Colaborador {
+//     // @ManyToOne
+//     // // @JoinColumn(name="aluno_id")
+//     // private Aluno aluno;
+
+//     @NonNull
+//     private String papel;
+// }

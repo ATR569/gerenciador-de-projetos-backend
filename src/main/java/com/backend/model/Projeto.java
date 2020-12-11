@@ -8,14 +8,15 @@
 // import lombok.NoArgsConstructor;
 // import lombok.NonNull;
 
-// import java.util.List;
+// // import java.util.List;
 
 // import javax.persistence.Entity;
 // import javax.persistence.Id;
 // import javax.persistence.GeneratedValue;
 // import javax.persistence.GenerationType;
-// import javax.persistence.JoinColumn;
-// import javax.persistence.ManyToOne;
+// // import javax.persistence.JoinColumn;
+// // import javax.persistence.ManyToOne;
+// // import javax.persistence.OneToMany;
 
 // @Data
 // @AllArgsConstructor
@@ -36,9 +37,10 @@
 //     @NonNull
 //     private String descricao;
     
-//     @ManyToOne
-//     @JoinColumn(name="professor_id")
-//     private Professor coordenador;
+//     // @ManyToOne
+//     // @JoinColumn(name="professor_id")
+//     // private Professor coordenador;
 
-//     List<Colaborador> colaboradores;
+//     // @OneToMany(mappedBy="projeto")
+//     // Set<Colaborador> colaboradores;
 // }
