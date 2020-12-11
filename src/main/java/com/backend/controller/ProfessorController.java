@@ -8,9 +8,11 @@ import com.backend.repository.ProfessorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,8 +26,8 @@ public class ProfessorController {
 
     @PostMapping
     public ResponseEntity<?> insert(@RequestBody Professor obj) {
-        Professor professor = Professor.builder().nome(obj.getNome()).matricula(obj.getMatricula()).senha(obj.getSenha())
-                .areaAtuacao(obj.getAreaAtuacao()).formacao(obj.getAreaAtuacao()).build();
+        Professor professor = Professor.builder().nome(obj.getNome()).matricula(obj.getMatricula())
+                .senha(obj.getSenha()).areaAtuacao(obj.getAreaAtuacao()).formacao(obj.getFormacao()).build();
 
         try {
             professorRepository.save(professor);
@@ -48,5 +50,37 @@ public class ProfessorController {
             return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
 
         return ResponseEntity.ok(professorRepository.findById(id));
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<?> editProfessor(@PathVariable("id") int id, @RequestBody Professor professor) {
+        Optional<Professor> p = professorRepository.findById(id);
+
+        if (p.isEmpty())
+            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
+
+        try {
+            professor.setId(id);
+            professor.setSenha((p.get().getSenha()));
+            professorRepository.save(professor);
+            return ResponseEntity.ok(professor);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
+        }
+    }
+
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> deleteProfessor(@PathVariable int id) {
+        Optional<Professor> p = professorRepository.findById(id);
+
+        if (p.isEmpty())
+            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
+
+        try {
+            professorRepository.deleteById(p.get().getId());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
+        }
     }
 }
