@@ -1,46 +1,48 @@
-// package com.backend.model;
+package com.backend.model;
 
-// import java.io.Serializable;
+import java.io.Serializable;
+import java.util.Set;
 
-// import lombok.AllArgsConstructor;
-// import lombok.Builder;
-// import lombok.Data;
-// import lombok.NoArgsConstructor;
-// import lombok.NonNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
-// // import java.util.List;
+// import java.util.Set;
 
-// import javax.persistence.Entity;
-// import javax.persistence.Id;
-// import javax.persistence.GeneratedValue;
-// import javax.persistence.GenerationType;
-// // import javax.persistence.JoinColumn;
-// // import javax.persistence.ManyToOne;
-// // import javax.persistence.OneToMany;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+// import javax.persistence.OneToMany;
+import javax.persistence.OneToMany;
 
-// @Data
-// @AllArgsConstructor
-// @NoArgsConstructor
-// @Builder
-// @Entity
-// public class Projeto implements Serializable{
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Entity
+public class Projeto implements Serializable{
 
-//     private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-//     @Id
-//     @GeneratedValue(strategy = GenerationType.IDENTITY)
-//     private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-//     @NonNull
-//     private String nome;
+    @NonNull
+    private String nome;
 
-//     @NonNull
-//     private String descricao;
+    @NonNull
+    private String descricao;
     
-//     // @ManyToOne
-//     // @JoinColumn(name="professor_id")
-//     // private Professor coordenador;
+    @ManyToOne
+    @JoinColumn(name="coordenador_id")
+    private Professor coordenador;
 
-//     // @OneToMany(mappedBy="projeto")
-//     // Set<Colaborador> colaboradores;
-// }
+    @OneToMany(mappedBy="projeto")
+    Set<Colaborador> colaboradores;
+}
