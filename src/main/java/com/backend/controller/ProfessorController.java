@@ -1,9 +1,13 @@
 package com.backend.controller;
 
+import java.util.HashSet;
 import java.util.Optional;
 
+import com.backend.dto.ProjetoDTO;
 import com.backend.model.Professor;
+import com.backend.model.Projeto;
 import com.backend.repository.ProfessorRepository;
+import com.backend.repository.ProjetoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,6 +28,9 @@ public class ProfessorController {
     @Autowired
     private ProfessorRepository professorRepository;
 
+    @Autowired
+    private ProjetoRepository projetoRepository;
+
     @PostMapping
     public ResponseEntity<?> insert(@RequestBody Professor obj) {
         Professor professor = Professor.builder().nome(obj.getNome()).matricula(obj.getMatricula())
@@ -32,6 +39,24 @@ public class ProfessorController {
         try {
             professorRepository.save(professor);
             return new ResponseEntity<>(professor, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("{id}/projetos")
+    public ResponseEntity<?> createProjeto(@PathVariable("id") int id, @RequestBody ProjetoDTO obj) {
+        Optional<Professor> coordenador = professorRepository.findById(id);
+
+        if (coordenador.isEmpty())
+            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
+
+        Projeto projeto = Projeto.builder().nome(obj.getNome()).descricao(obj.getDescricao())
+                .coordenador(coordenador.get()).colaboradores(new HashSet<>()).build();
+
+        try {
+            projetoRepository.save(projeto);
+            return new ResponseEntity<>(projeto, HttpStatus.CREATED);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

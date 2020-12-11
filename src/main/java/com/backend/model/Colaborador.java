@@ -2,8 +2,6 @@ package com.backend.model;
 
 import java.io.Serializable;
 
-// import javax.persistence.JoinColumn;
-// import javax.persistence.ManyToOne;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;

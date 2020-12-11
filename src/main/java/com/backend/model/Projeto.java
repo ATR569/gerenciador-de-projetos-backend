@@ -9,15 +9,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
-// import java.util.Set;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-// import javax.persistence.OneToMany;
 import javax.persistence.OneToMany;
 
 @Data
@@ -43,6 +40,6 @@ public class Projeto implements Serializable{
     @JoinColumn(name="coordenador_id")
     private Professor coordenador;
 
-    @OneToMany(mappedBy="projeto")
+    @OneToMany
     Set<Colaborador> colaboradores;
 }
