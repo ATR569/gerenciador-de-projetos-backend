@@ -20,7 +20,7 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Builder
-public class Aluno implements Serializable {
+public class Aluno implements Serializable, UsuarioIF {
 
     private static final long serialVersionUID = 1L;
 

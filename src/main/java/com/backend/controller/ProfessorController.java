@@ -108,4 +108,32 @@ public class ProfessorController {
             return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
         }
     }
+
+    // private void validarDTO(ProfessorDTO dto) throws ApiException {
+    //     if (dto == null)
+    //         throw new EmptyBodyException();
+        
+    //     List<String> emptyFields = new ArrayList<>();
+
+    //     if (dto.getNome() == null)
+    //         emptyFields.add("nome");
+    //     if (dto.getSenha() == null)
+    //         emptyFields.add("senha");
+    //     if (dto.getCurso() == null)
+    //         emptyFields.add("curso");
+
+    //     if (emptyFields.size() > 0)
+    //         throw new RequiredFieldsException(emptyFields.toArray());
+    // }
+
+    // private Professor findProfessorById(int id) throws ApiException{
+    //     Optional<Professor> a = profesorRepository.findById(id);
+
+    //     if (a.isEmpty())
+    //         throw new UserNotFoundException("Aluno");
+
+    //     return a.get();
+    // }
+
+
 }

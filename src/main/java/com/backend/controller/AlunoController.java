@@ -1,8 +1,15 @@
 package com.backend.controller;
 
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Optional;
 
 import com.backend.dto.AlunoDTO;
+import com.backend.exceptions.ApiException;
+import com.backend.exceptions.EmptyBodyException;
+import com.backend.exceptions.RequiredFieldsException;
+import com.backend.exceptions.UserNotFoundException;
 import com.backend.model.Aluno;
 import com.backend.repository.AlunoRepository;
 
@@ -18,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping(value = "/api/alunos")
 public class AlunoController {
@@ -25,20 +33,21 @@ public class AlunoController {
     @Autowired
     private AlunoRepository alunoRepository;
 
-    private String gerarMatricula(){
-        Integer matricula = (int) Math.floor(Math.random() * 999999);
-
-        return String.format("10%06d", matricula);
-    }
-
     @PostMapping
     public ResponseEntity<?> insert(@RequestBody AlunoDTO obj) {
-        Aluno aluno = Aluno.builder().nome(obj.getNome()).matricula(gerarMatricula()).senha(obj.getSenha())
-                .curso(obj.getCurso()).build();
-
         try {
+            validarDTO(obj);
+
+            Aluno aluno = Aluno.builder().nome(obj.getNome())
+                                .matricula(gerarMatricula())
+                                .senha(obj.getSenha())
+                                .curso(obj.getCurso())
+                                .build();
+
             alunoRepository.save(aluno);
             return new ResponseEntity<>(aluno, HttpStatus.CREATED);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -51,26 +60,31 @@ public class AlunoController {
 
     @GetMapping("{id}")
     public ResponseEntity<?> getAlunoById(@PathVariable("id") int id) {
-        Optional<Aluno> a = alunoRepository.findById(id);
-
-        if (a.isEmpty())
-            return new ResponseEntity<>("Aluno não encontrado!", HttpStatus.NOT_FOUND);
-
-        return ResponseEntity.ok(alunoRepository.findById(id));
+        try{
+            Aluno aluno = findAlunoById(id); 
+            return ResponseEntity.ok(aluno);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
+        }
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<?> editAluno(@PathVariable("id") int id, @RequestBody Aluno aluno) {
-        Optional<Aluno> a = alunoRepository.findById(id);
-
-        if (a.isEmpty())
-            return new ResponseEntity<>("Aluno não encontrado!", HttpStatus.NOT_FOUND);
-
+    public ResponseEntity<?> editAluno(@PathVariable("id") int id, @RequestBody AlunoDTO alunoDTO) {
         try {
-            aluno.setId(id);
-            aluno.setSenha((a.get().getSenha()));
+            Aluno aluno = findAlunoById(id);
+            
+            validarDTO(alunoDTO);
+
+            aluno.setCurso(alunoDTO.getCurso());
+            aluno.setNome(alunoDTO.getNome());
+            aluno.setSenha(alunoDTO.getSenha());
+            
             alunoRepository.save(aluno);
             return ResponseEntity.ok(aluno);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
             return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
         }
@@ -78,16 +92,47 @@ public class AlunoController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteAluno(@PathVariable int id) {
-        Optional<Aluno> a = alunoRepository.findById(id);
-
-        if (a.isEmpty())
-            return new ResponseEntity<>("Aluno não encontrado!", HttpStatus.NOT_FOUND);
-
         try {
-            alunoRepository.deleteById(a.get().getId());
+            Aluno aluno = findAlunoById(id);
+            alunoRepository.deleteById(aluno.getId());
+
             return ResponseEntity.noContent().build();
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
             return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
         }
+    }
+
+    private String gerarMatricula(){
+        Integer matricula = (int) Math.floor(Math.random() * 99999);
+
+        return String.format("10%04d%04d", Calendar.getInstance().get(Calendar.YEAR),matricula);
+    }
+
+    private void validarDTO(AlunoDTO dto) throws ApiException {
+        if (dto == null)
+            throw new EmptyBodyException();
+        
+        List<String> emptyFields = new ArrayList<>();
+
+        if (dto.getNome() == null)
+            emptyFields.add("nome");
+        if (dto.getSenha() == null)
+            emptyFields.add("senha");
+        if (dto.getCurso() == null)
+            emptyFields.add("curso");
+
+        if (emptyFields.size() > 0)
+            throw new RequiredFieldsException(emptyFields.toArray());
+    }
+
+    private Aluno findAlunoById(int id) throws ApiException{
+        Optional<Aluno> a = alunoRepository.findById(id);
+
+        if (a.isEmpty())
+            throw new UserNotFoundException("Aluno");
+
+        return a.get();
     }
 }

@@ -20,7 +20,7 @@ import lombok.NonNull;
 @NoArgsConstructor
 @Entity
 @Builder
-public class Professor implements Serializable{
+public class Professor implements Serializable, UsuarioIF{
 
     private static final long serialVersionUID = 1L;
 
