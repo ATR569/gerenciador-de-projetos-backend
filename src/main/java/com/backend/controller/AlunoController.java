@@ -2,6 +2,7 @@ package com.backend.controller;
 
 import java.util.Optional;
 
+import com.backend.dto.AlunoDTO;
 import com.backend.model.Aluno;
 import com.backend.repository.AlunoRepository;
 
@@ -24,9 +25,15 @@ public class AlunoController {
     @Autowired
     private AlunoRepository alunoRepository;
 
+    private String gerarMatricula(){
+        Integer matricula = (int) Math.floor(Math.random() * 999999);
+
+        return String.format("10%06d", matricula);
+    }
+
     @PostMapping
-    public ResponseEntity<?> insert(@RequestBody Aluno obj) {
-        Aluno aluno = Aluno.builder().nome(obj.getNome()).matricula(obj.getMatricula()).senha(obj.getSenha())
+    public ResponseEntity<?> insert(@RequestBody AlunoDTO obj) {
+        Aluno aluno = Aluno.builder().nome(obj.getNome()).matricula(gerarMatricula()).senha(obj.getSenha())
                 .curso(obj.getCurso()).build();
 
         try {
