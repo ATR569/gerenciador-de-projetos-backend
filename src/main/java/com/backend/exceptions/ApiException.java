@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import lombok.Getter;
 
 @Getter
-public abstract class ApiException extends Exception{
+public abstract class ApiException extends Exception {
     private static final long serialVersionUID = 1L;
     private HttpStatus status;
     

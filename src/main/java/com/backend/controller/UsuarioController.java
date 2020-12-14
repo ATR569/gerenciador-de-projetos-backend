@@ -6,6 +6,7 @@ import com.backend.exceptions.ApiException;
 import com.backend.exceptions.UserNotFoundException;
 import com.backend.model.Aluno;
 import com.backend.model.Professor;
+import com.backend.model.UserTypeEnum;
 import com.backend.model.Usuario;
 import com.backend.model.UsuarioIF;
 import com.backend.repository.AlunoRepository;
@@ -32,7 +33,7 @@ public class UsuarioController {
         Optional<Professor> p = professorRepository.findByMatricula(obj.getMatricula());
         
         if (p.isEmpty())
-            throw new UserNotFoundException("Professor");
+            throw new UserNotFoundException(UserTypeEnum.USUARIO);
         
         Professor professor = p.get(); 
 

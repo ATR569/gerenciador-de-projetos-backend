@@ -4,7 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.backend.dto.ColaboradorResponseDTO;
 import com.backend.dto.ProjetoDTO;
+import com.backend.exceptions.ApiException;
+import com.backend.exceptions.EmptyBodyException;
+import com.backend.exceptions.ObjectNotFoundException;
+import com.backend.exceptions.RequiredFieldsException;
+import com.backend.model.Aluno;
 import com.backend.model.Colaborador;
 import com.backend.model.Projeto;
 import com.backend.repository.ColaboradorRepository;
@@ -25,45 +31,87 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjetoController {
     @Autowired
     private ProjetoRepository projetoRepository;
+    @Autowired
+    private AlunoController alunoController;
 
     @Autowired
     private ColaboradorRepository colaboradorRepository;
 
     @PostMapping("{id}/colaboradores")
-    public ResponseEntity<?> createProjeto(@PathVariable("id") int id, @RequestBody Colaborador obj) {
-        Optional<Projeto> projeto = projetoRepository.findById(id);
-
-        if (projeto.isEmpty())
-            return new ResponseEntity<>("Projeto não encontrado!", HttpStatus.NOT_FOUND);
-
-        Colaborador colaborador = Colaborador.builder().projeto(projeto.get()).aluno(obj.getAluno())
-                .papel(obj.getPapel()).build();
-
-        try {
+    public ResponseEntity<?> addColaborador(@PathVariable("id") int id, @RequestBody Colaborador colaborador) {
+        try{
+            Projeto projeto = findProjetoById(id);
+            validarColaborador(colaborador);
+            Aluno aluno = alunoController.findAlunoById(colaborador.getAluno().getId());
+            
+            colaborador.setIdProjeto(id);
             colaboradorRepository.save(colaborador);
-            return new ResponseEntity<>(colaborador, HttpStatus.CREATED);
+
+            ColaboradorResponseDTO colaboradorResponseDTO = ColaboradorResponseDTO.builder()
+                                .id(colaborador.getId())
+                                .aluno(aluno)
+                                .projeto(new ProjetoDTO(projeto))
+                                .papel(colaborador.getPapel())
+                                .build();
+
+            return ResponseEntity.ok(colaboradorResponseDTO);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return new ResponseEntity<>("ERRO INTERNO NO SERVIDOR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
     @GetMapping
     public ResponseEntity<?> getProjetos() {
-        List<ProjetoDTO> projetosDTO = new ArrayList<>();
+        try {
+            List<ProjetoDTO> projetosDTO = new ArrayList<>();
 
-        projetoRepository.findAll().forEach(projeto -> projetosDTO.add(new ProjetoDTO(projeto)));
+            projetoRepository.findAll().forEach(projeto -> projetosDTO.add(new ProjetoDTO(projeto)));
 
-        return ResponseEntity.ok(projetosDTO);
+            return ResponseEntity.ok(projetosDTO);
+        } catch (Exception e) {
+            return new ResponseEntity<>("ERRO INTERNO NO SERVIDOR", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("{id}")
     public ResponseEntity<?> getProjetoById(@PathVariable("id") int id) {
+        try {
+            Projeto projeto = findProjetoById(id);
+
+            List<Colaborador> colaboradores = colaboradorRepository.findByIdProjeto(projeto.getId());
+
+            projeto.setColaboradores(colaboradores);
+            return ResponseEntity.ok(projeto);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
+        } catch (Exception e) {
+            return new ResponseEntity<>("ERRO INTERNO NO SERVIDOR", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    protected void validarColaborador(Colaborador colaborador) throws ApiException {
+        if (colaborador == null)
+            throw new EmptyBodyException();
+        
+        List<String> emptyFields = new ArrayList<>();
+
+        if (colaborador.getAluno() == null)
+            emptyFields.add("aluno_id");
+        if (colaborador.getPapel() == null)
+            emptyFields.add("papel");
+
+        if (emptyFields.size() > 0)
+            throw new RequiredFieldsException(emptyFields.toArray());
+    }
+
+    protected Projeto findProjetoById(int id) throws ApiException {
         Optional<Projeto> projeto = projetoRepository.findById(id);
 
         if (projeto.isEmpty())
-            return new ResponseEntity<>("Projeto não encontrado!", HttpStatus.NOT_FOUND);
+            throw new ObjectNotFoundException("Projeto");
 
-        return ResponseEntity.ok(projetoRepository.findById(id));
+        return projeto.get();
     }
-
 }

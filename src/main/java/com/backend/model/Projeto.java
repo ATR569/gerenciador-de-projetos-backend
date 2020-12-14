@@ -1,7 +1,7 @@
 package com.backend.model;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,5 +41,5 @@ public class Projeto implements Serializable{
     private Professor coordenador;
 
     @OneToMany
-    Set<Colaborador> colaboradores;
+    List<Colaborador> colaboradores;
 }

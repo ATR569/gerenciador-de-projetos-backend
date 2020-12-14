@@ -2,7 +2,6 @@ package com.backend.controller;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Optional;
 
 import com.backend.dto.AlunoDTO;
@@ -11,6 +10,8 @@ import com.backend.exceptions.EmptyBodyException;
 import com.backend.exceptions.RequiredFieldsException;
 import com.backend.exceptions.UserNotFoundException;
 import com.backend.model.Aluno;
+import com.backend.model.UserTypeEnum;
+import com.backend.model.Usuario;
 import com.backend.repository.AlunoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class AlunoController {
             validarDTO(obj);
 
             Aluno aluno = Aluno.builder().nome(obj.getNome())
-                                .matricula(gerarMatricula())
+                                .matricula(Usuario.gerarMatricula(UserTypeEnum.ALUNO))
                                 .senha(obj.getSenha())
                                 .curso(obj.getCurso())
                                 .build();
@@ -104,13 +105,7 @@ public class AlunoController {
         }
     }
 
-    private String gerarMatricula(){
-        Integer matricula = (int) Math.floor(Math.random() * 99999);
-
-        return String.format("10%04d%04d", Calendar.getInstance().get(Calendar.YEAR),matricula);
-    }
-
-    private void validarDTO(AlunoDTO dto) throws ApiException {
+    protected void validarDTO(AlunoDTO dto) throws ApiException {
         if (dto == null)
             throw new EmptyBodyException();
         
@@ -127,11 +122,11 @@ public class AlunoController {
             throw new RequiredFieldsException(emptyFields.toArray());
     }
 
-    private Aluno findAlunoById(int id) throws ApiException{
+    protected Aluno findAlunoById(int id) throws ApiException{
         Optional<Aluno> a = alunoRepository.findById(id);
 
         if (a.isEmpty())
-            throw new UserNotFoundException("Aluno");
+            throw new UserNotFoundException(UserTypeEnum.ALUNO);
 
         return a.get();
     }

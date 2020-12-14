@@ -1,15 +1,13 @@
 package com.backend.exceptions;
 
-import com.backend.model.UserTypeEnum;
-
 import org.springframework.http.HttpStatus;
 
-public class UserNotFoundException extends ApiException {
+public class ObjectNotFoundException extends ApiException {
 
     private static final long serialVersionUID = 1L;
     
-    public UserNotFoundException(UserTypeEnum tipoUsuario){
-        super("Erro: ".concat(tipoUsuario.getDescricao()).concat(" não encontrado!"), HttpStatus.NOT_FOUND);
+    public ObjectNotFoundException(String descricao){
+        super("Erro: ".concat(descricao).concat(" não encontrado!"), HttpStatus.NOT_FOUND);
     }
 
     @Override

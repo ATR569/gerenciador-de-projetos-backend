@@ -1,11 +1,19 @@
 package com.backend.controller;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import com.backend.dto.ProfessorDTO;
 import com.backend.dto.ProjetoDTO;
+import com.backend.exceptions.ApiException;
+import com.backend.exceptions.EmptyBodyException;
+import com.backend.exceptions.RequiredFieldsException;
+import com.backend.exceptions.UserNotFoundException;
 import com.backend.model.Professor;
 import com.backend.model.Projeto;
+import com.backend.model.UserTypeEnum;
+import com.backend.model.Usuario;
 import com.backend.repository.ProfessorRepository;
 import com.backend.repository.ProjetoRepository;
 
@@ -32,33 +40,46 @@ public class ProfessorController {
     private ProjetoRepository projetoRepository;
 
     @PostMapping
-    public ResponseEntity<?> insert(@RequestBody Professor obj) {
-        Professor professor = Professor.builder().nome(obj.getNome()).matricula(obj.getMatricula())
-                .senha(obj.getSenha()).areaAtuacao(obj.getAreaAtuacao()).formacao(obj.getFormacao()).build();
-
+    public ResponseEntity<?> insert(@RequestBody ProfessorDTO professorDTO) {
         try {
+            validarDTO(professorDTO);
+
+            Professor professor = Professor.builder()
+                                .nome(professorDTO.getNome())
+                                .matricula(Usuario.gerarMatricula(UserTypeEnum.PROFESSOR))
+                                .senha(professorDTO.getSenha())
+                                .areaAtuacao(professorDTO.getAreaAtuacao())
+                                .formacao(professorDTO.getFormacao())
+                                .build();
+
             professorRepository.save(professor);
             return new ResponseEntity<>(professor, HttpStatus.CREATED);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("{id}/projetos")
-    public ResponseEntity<?> createProjeto(@PathVariable("id") int id, @RequestBody ProjetoDTO obj) {
-        Optional<Professor> coordenador = professorRepository.findById(id);
-
-        if (coordenador.isEmpty())
-            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
-
-        Projeto projeto = Projeto.builder().nome(obj.getNome()).descricao(obj.getDescricao())
-                .coordenador(coordenador.get()).colaboradores(new HashSet<>()).build();
-
+    public ResponseEntity<?> createProjeto(@PathVariable("id") int id, @RequestBody ProjetoDTO projetoDTO) {
         try {
+            Professor coordenador = findProfessorById(id);
+            validarDTO(projetoDTO);
+
+            Projeto projeto = Projeto.builder()
+                                .coordenador(coordenador)
+                                .nome(projetoDTO.getNome())
+                                .descricao(projetoDTO.getDescricao())
+                                .colaboradores(new ArrayList<>())
+                                .build();
+
             projetoRepository.save(projeto);
             return new ResponseEntity<>(projeto, HttpStatus.CREATED);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
         }
     }
 
@@ -69,26 +90,33 @@ public class ProfessorController {
 
     @GetMapping("{id}")
     public ResponseEntity<?> getProfessorById(@PathVariable("id") int id) {
-        Optional<Professor> professor = professorRepository.findById(id);
+        try {
+            Professor professor = findProfessorById(id);
 
-        if (professor.isEmpty())
-            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
-
-        return ResponseEntity.ok(professorRepository.findById(id));
+            return ResponseEntity.ok(professor);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
+        } catch (Exception e) {
+            return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
+        }
     }
 
     @PutMapping("{id}")
-    public ResponseEntity<?> editProfessor(@PathVariable("id") int id, @RequestBody Professor professor) {
-        Optional<Professor> p = professorRepository.findById(id);
-
-        if (p.isEmpty())
-            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
-
+    public ResponseEntity<?> editProfessor(@PathVariable("id") int id, @RequestBody ProfessorDTO professorDTO) {
         try {
-            professor.setId(id);
-            professor.setSenha((p.get().getSenha()));
+            Professor professor = findProfessorById(id);
+            
+            validarDTO(professorDTO);
+
+            professor.setNome(professorDTO.getNome());
+            professor.setSenha(professorDTO.getSenha());
+            professor.setAreaAtuacao(professorDTO.getAreaAtuacao());
+            professor.setFormacao(professorDTO.getFormacao());
+            
             professorRepository.save(professor);
             return ResponseEntity.ok(professor);
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
             return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
         }
@@ -96,44 +124,59 @@ public class ProfessorController {
 
     @DeleteMapping("{id}")
     public ResponseEntity<?> deleteProfessor(@PathVariable int id) {
-        Optional<Professor> p = professorRepository.findById(id);
-
-        if (p.isEmpty())
-            return new ResponseEntity<>("Professor não encontrado!", HttpStatus.NOT_FOUND);
-
         try {
-            professorRepository.deleteById(p.get().getId());
+            Professor professor = findProfessorById(id);
+            professorRepository.deleteById(professor.getId());
+
             return ResponseEntity.noContent().build();
+        } catch (ApiException e) {
+            return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
             return new ResponseEntity<>("Erro Interno! Tente Novamente!", HttpStatus.BAD_GATEWAY);
         }
     }
 
-    // private void validarDTO(ProfessorDTO dto) throws ApiException {
-    //     if (dto == null)
-    //         throw new EmptyBodyException();
+    protected void validarDTO(ProfessorDTO dto) throws ApiException {
+        if (dto == null)
+            throw new EmptyBodyException();
         
-    //     List<String> emptyFields = new ArrayList<>();
+        List<String> emptyFields = new ArrayList<>();
 
-    //     if (dto.getNome() == null)
-    //         emptyFields.add("nome");
-    //     if (dto.getSenha() == null)
-    //         emptyFields.add("senha");
-    //     if (dto.getCurso() == null)
-    //         emptyFields.add("curso");
+        if (dto.getNome() == null)
+            emptyFields.add("nome");
+        if (dto.getSenha() == null)
+            emptyFields.add("senha");
+        if (dto.getFormacao() == null)
+            emptyFields.add("formacao");
+        if (dto.getAreaAtuacao() == null)
+            emptyFields.add("area de atuacao");
 
-    //     if (emptyFields.size() > 0)
-    //         throw new RequiredFieldsException(emptyFields.toArray());
-    // }
+        if (emptyFields.size() > 0)
+            throw new RequiredFieldsException(emptyFields.toArray());
+    }
 
-    // private Professor findProfessorById(int id) throws ApiException{
-    //     Optional<Professor> a = profesorRepository.findById(id);
+    protected void validarDTO(ProjetoDTO dto) throws ApiException {
+        if (dto == null)
+            throw new EmptyBodyException();
+        
+        List<String> emptyFields = new ArrayList<>();
 
-    //     if (a.isEmpty())
-    //         throw new UserNotFoundException("Aluno");
+        if (dto.getNome() == null)
+            emptyFields.add("nome");
+        if (dto.getDescricao() == null)
+            emptyFields.add("descricao");
 
-    //     return a.get();
-    // }
+        if (emptyFields.size() > 0)
+            throw new RequiredFieldsException(emptyFields.toArray());
+    }
 
+    protected Professor findProfessorById(int id) throws ApiException{
+        Optional<Professor> a = professorRepository.findById(id);
+
+        if (a.isEmpty())
+            throw new UserNotFoundException(UserTypeEnum.PROFESSOR);
+
+        return a.get();
+    }
 
 }

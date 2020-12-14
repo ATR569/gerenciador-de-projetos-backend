@@ -21,19 +21,19 @@ import lombok.NonNull;
 @Entity
 @Builder
 public class Colaborador implements Serializable{
+    private static final long serialVersionUID = 1L;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    
     @ManyToOne
     @JoinColumn(name="aluno_id")
     private Aluno aluno;
-
-    @ManyToOne
-    @JoinColumn(name="projeto_id")
-    private Projeto projeto;
-
-    private static final long serialVersionUID = 1L;
+    
+    @NonNull
+    private Integer idProjeto;
 
     @NonNull
     private String papel;
