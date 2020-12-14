@@ -27,14 +27,10 @@ public class Colaborador implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    
     @ManyToOne
     @JoinColumn(name="aluno_id")
     private Aluno aluno;
     
-    @NonNull
-    private Integer idProjeto;
-
     @NonNull
     private String papel;
 }

@@ -22,11 +22,11 @@ public class Usuario {
     @NonNull
     String senha;
 
-    public int getTipoUsuario(){
+    public UserTypeEnum getTipoUsuario(){
         if (this.getMatricula().substring(0,2).equals("10")){
-            return TIPO_ALUNO;
+            return UserTypeEnum.ALUNO;
         }else{
-            return TIPO_PROFESSOR;
+            return UserTypeEnum.PROFESSOR;
         }
     }
 

@@ -1,8 +1,12 @@
 package com.backend.controller;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import com.backend.exceptions.ApiException;
+import com.backend.exceptions.EmptyBodyException;
+import com.backend.exceptions.RequiredFieldsException;
 import com.backend.exceptions.UserNotFoundException;
 import com.backend.model.Aluno;
 import com.backend.model.Professor;
@@ -29,44 +33,33 @@ public class UsuarioController {
     @Autowired
     private ProfessorRepository professorRepository;
 
-    private Professor getAsProfessor(Usuario obj) throws ApiException{
+    private Professor getAsProfessor(Usuario obj) throws ApiException {
         Optional<Professor> p = professorRepository.findByMatricula(obj.getMatricula());
-        
+
         if (p.isEmpty())
             throw new UserNotFoundException(UserTypeEnum.USUARIO);
-        
-        Professor professor = p.get(); 
 
-        return Professor.builder()
-            .id(professor.getId())
-            .nome(professor.getNome())
-            .matricula(professor.getMatricula())
-            .senha(professor.getSenha())
-            .areaAtuacao(professor.getAreaAtuacao())
-            .formacao(professor.getFormacao())
-            .build();
+        return p.get();
     }
 
-    private Aluno getAsAluno(Usuario obj)  throws ApiException {
-        Optional<Aluno> aluno = alunoRepository.findByMatricula(obj.getMatricula());
-        
-        return Aluno.builder()
-            .id(aluno.get().getId())
-            .nome(aluno.get().getNome())
-            .matricula(aluno.get().getMatricula())
-            .senha(aluno.get().getSenha())
-            .curso(aluno.get().getCurso())
-            .build();
+    private Aluno getAsAluno(Usuario obj) throws ApiException {
+        Optional<Aluno> a = alunoRepository.findByMatricula(obj.getMatricula());
+
+        if (a.isEmpty())
+            throw new UserNotFoundException(UserTypeEnum.USUARIO);
+
+        return a.get();
     }
 
     @PostMapping
     public ResponseEntity<?> login(@RequestBody Usuario obj) {
         try {
-            UsuarioIF usuario = obj.getTipoUsuario() == Usuario.TIPO_PROFESSOR ? getAsProfessor(obj) : getAsAluno(obj);
-            
-            if (obj.getSenha().equals(usuario.getSenha())){
+            validarUsuario(obj);
+            UsuarioIF usuario = obj.getTipoUsuario() == UserTypeEnum.PROFESSOR ? getAsProfessor(obj) : getAsAluno(obj);
+
+            if (obj.getSenha().equals(usuario.getSenha())) {
                 return new ResponseEntity<>(usuario, HttpStatus.OK);
-            }else{
+            } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
         } catch (ApiException e) {
@@ -74,6 +67,21 @@ public class UsuarioController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    private void validarUsuario(Usuario usuario) throws ApiException {
+        if (usuario == null)
+            throw new EmptyBodyException();
+
+        List<String> emptyFields = new ArrayList<>();
+
+        if (usuario.getMatricula() == null)
+            emptyFields.add("matricula");
+        if (usuario.getSenha() == null)
+            emptyFields.add("senha");
+
+        if (emptyFields.size() > 0)
+            throw new RequiredFieldsException(emptyFields.toArray());
     }
 
 }

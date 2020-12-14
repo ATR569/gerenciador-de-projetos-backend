@@ -11,7 +11,7 @@ public class EmptyBodyException extends ApiException {
 
     @Override
     public ApiExceptionObject getApiExceptionObject() {
-        return new ApiExceptionObject(this.getStatus().value(), "Dados insuficientes", this.getMessage());
+        return new ApiExceptionObject(this.getStatus().value(), this.getMessage(), "Dados insuficientes");
     }
     
 }

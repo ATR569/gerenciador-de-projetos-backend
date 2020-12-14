@@ -39,4 +39,9 @@ public class Aluno implements Serializable, UsuarioIF {
 
     @NonNull
     private String curso;
+
+    @Override
+    public UserTypeEnum getTipoUsuario(){
+        return UserTypeEnum.ALUNO;
+    }
 }

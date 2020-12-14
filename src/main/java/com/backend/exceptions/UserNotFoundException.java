@@ -14,6 +14,6 @@ public class UserNotFoundException extends ApiException {
 
     @Override
     public ApiExceptionObject  getApiExceptionObject(){
-        return new ApiExceptionObject(this.getStatus().value(), "Erro", this.getMessage());
+        return new ApiExceptionObject(this.getStatus().value(), this.getMessage(), "Erro");
     }
 }

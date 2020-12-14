@@ -42,4 +42,9 @@ public class Professor implements Serializable, UsuarioIF{
 
     @NonNull
     private String formacao;
+
+    @Override
+    public UserTypeEnum getTipoUsuario(){
+        return UserTypeEnum.PROFESSOR;
+    }
 }
