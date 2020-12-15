@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,16 +59,14 @@ public class JwtAuthController {
                 return new ResponseEntity<>(exception, HttpStatus.UNAUTHORIZED);
             }
 
-            final String token = jwtTokenUtil.generateToken(userDetails);
+            final String token = jwtTokenUtil.generateToken(userDetails, usuario);
 
-            return ResponseEntity.ok(new JwtResponseDTO(token, usuario));
-        } catch (UsernameNotFoundException e) {
-            ApiExceptionObject exception = new ApiExceptionObject(401, "Usuário não encontrado", "Não Autorizado");
-            return new ResponseEntity<>(exception, HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.ok(new JwtResponseDTO(token));
         } catch (ApiException e) {
             return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            ApiExceptionObject exception = new ApiExceptionObject(401, "Usuário não encontrado", "Não Autorizado");
+            return new ResponseEntity<>(exception, HttpStatus.UNAUTHORIZED);
         }
     }
 

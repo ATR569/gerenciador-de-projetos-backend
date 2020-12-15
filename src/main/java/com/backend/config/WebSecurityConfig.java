@@ -57,7 +57,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.POST, "/login").permitAll()
                     .antMatchers(HttpMethod.POST, "/api/alunos").permitAll()
                     .antMatchers(HttpMethod.POST, "/api/professores").permitAll()
-                    .antMatchers(HttpMethod.POST, "/api/professores/{id}/projetos").hasAnyAuthority("PROFESSOR")
+                    .antMatchers(HttpMethod.POST, "/api/professores/{id}/projetos").hasAuthority("PROFESSOR")
+                    .antMatchers("/api/professores/{id}").hasAuthority("PROFESSOR")
+
                 // Qualquer outra requisição deve ser checada
                 .anyRequest().authenticated().and().exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
