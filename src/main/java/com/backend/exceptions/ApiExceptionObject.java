@@ -13,4 +13,9 @@ public class ApiExceptionObject {
     private Integer status;
     private String descricao;
     private String mensagem;
+
+    @Override
+    public String toString(){
+        return "{ \"status\": \"" + this.status + "\", \"descricao\": \"" + this.descricao + "\", \"mensagem\": \"" + this.mensagem + "\" }";
+    }
 }

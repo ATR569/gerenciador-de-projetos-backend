@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.backend.dto.ColaboradorDTO;
 import com.backend.dto.ColaboradorResponseDTO;
 import com.backend.dto.ProjetoDTO;
 import com.backend.exceptions.ApiException;
@@ -38,14 +39,22 @@ public class ProjetoController {
     private ColaboradorRepository colaboradorRepository;
 
     @PostMapping("{id}/colaboradores")
-    public ResponseEntity<?> addColaborador(@PathVariable("id") int id, @RequestBody Colaborador colaborador) {
+    public ResponseEntity<?> addColaborador(@PathVariable("id") int id, @RequestBody ColaboradorDTO colaboradorDTO) {
         try{
             Projeto projeto = findProjetoById(id);
-            validarColaborador(colaborador);
-            Aluno aluno = alunoController.findAlunoById(colaborador.getAluno().getId());
+            validarDTO(colaboradorDTO);
             
-            colaborador.setIdProjeto(id);
+            Aluno aluno = alunoController.findAlunoById(colaboradorDTO.getIdAluno());
+
+            Colaborador colaborador = Colaborador.builder()
+                                .aluno(aluno)
+                                .papel(colaboradorDTO.getPapel())
+                                .build();
+
             colaboradorRepository.save(colaborador);
+            projeto.getColaboradores().add(colaborador);
+
+            projetoRepository.save(projeto);
 
             ColaboradorResponseDTO colaboradorResponseDTO = ColaboradorResponseDTO.builder()
                                 .id(colaborador.getId())
@@ -80,9 +89,6 @@ public class ProjetoController {
         try {
             Projeto projeto = findProjetoById(id);
 
-            List<Colaborador> colaboradores = colaboradorRepository.findByIdProjeto(projeto.getId());
-
-            projeto.setColaboradores(colaboradores);
             return ResponseEntity.ok(projeto);
         } catch (ApiException e) {
             return new ResponseEntity<>(e.getApiExceptionObject(), e.getStatus());
@@ -100,6 +106,21 @@ public class ProjetoController {
         if (colaborador.getAluno() == null)
             emptyFields.add("aluno_id");
         if (colaborador.getPapel() == null)
+            emptyFields.add("papel");
+
+        if (emptyFields.size() > 0)
+            throw new RequiredFieldsException(emptyFields.toArray());
+    }
+
+    protected void validarDTO(ColaboradorDTO dto) throws ApiException {
+        if (dto == null)
+            throw new EmptyBodyException();
+        
+        List<String> emptyFields = new ArrayList<>();
+
+        if (dto.getIdAluno() == null)
+            emptyFields.add("aluno_id");
+        if (dto.getPapel() == null)
             emptyFields.add("papel");
 
         if (emptyFields.size() > 0)
