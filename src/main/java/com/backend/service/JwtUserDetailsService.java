@@ -1,6 +1,7 @@
 package com.backend.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.backend.model.Aluno;
@@ -12,6 +13,8 @@ import com.backend.repository.ProfessorRepository;
 import com.backend.utils.UsuarioUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,7 +40,17 @@ public class JwtUserDetailsService implements UserDetailsService {
             user = findProfessorByMatricula(username);
         }
 
-        return new User(user.getMatricula(), user.getSenha(), new ArrayList<>());
+        List<GrantedAuthority> permissions = new ArrayList<>();
+        
+        if (UsuarioUtils.getTipoUsuario(username) == UserTypeEnum.ALUNO){
+            permissions.add(new SimpleGrantedAuthority("ALUNO"));
+        }else{
+            permissions.add(new SimpleGrantedAuthority("PROFESSOR"));
+        }
+
+        User u = new User(user.getMatricula(), user.getSenha(), permissions);
+
+        return u;
     }
 
     private Aluno findAlunoByMatricula(String matricula) throws UsernameNotFoundException {
