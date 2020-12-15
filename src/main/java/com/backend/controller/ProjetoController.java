@@ -130,7 +130,7 @@ public class ProjetoController {
     protected Projeto findProjetoById(int id) throws ApiException {
         Optional<Projeto> projeto = projetoRepository.findById(id);
 
-        if (projeto.isEmpty())
+        if (projeto == null)
             throw new ObjectNotFoundException("Projeto");
 
         return projeto.get();

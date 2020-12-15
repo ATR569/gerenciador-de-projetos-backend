@@ -56,7 +56,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     private Aluno findAlunoByMatricula(String matricula) throws UsernameNotFoundException {
         Optional<Aluno> aluno = alunoRepository.findByMatricula(matricula);
 
-        if (aluno.isEmpty())
+        if (aluno == null)
             throw new UsernameNotFoundException("Usuário não encontrado!");
 
         return aluno.get();
@@ -65,7 +65,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     private Professor findProfessorByMatricula(String matricula) throws UsernameNotFoundException {
         Optional<Professor> professor = professorRepository.findByMatricula(matricula);
 
-        if (professor.isEmpty())
+        if (professor == null)
             throw new UsernameNotFoundException("Usuário não encontrado!");
 
         return professor.get();
