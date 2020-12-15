@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,8 +40,9 @@ public class Aluno implements Serializable, UsuarioIF {
 
     @NonNull
     private String curso;
-
+    
     @Override
+    @JsonIgnore
     public UserTypeEnum getTipoUsuario(){
         return UserTypeEnum.ALUNO;
     }

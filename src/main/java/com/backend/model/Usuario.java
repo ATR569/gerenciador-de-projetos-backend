@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
+import com.backend.utils.UsuarioUtils;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,24 +17,21 @@ import lombok.NonNull;
 public class Usuario {
     public static final int TIPO_PROFESSOR = 1;
     public static final int TIPO_ALUNO = 2;
-    
+
     @NonNull
-    String matricula;
-    
+    String username;
+
     @NonNull
     String senha;
 
-    public UserTypeEnum getTipoUsuario(){
-        if (this.getMatricula().substring(0,2).equals("10")){
-            return UserTypeEnum.ALUNO;
-        }else{
-            return UserTypeEnum.PROFESSOR;
-        }
+    public UserTypeEnum getTipoUsuario() {
+        return UsuarioUtils.getTipoUsuario(this.getUsername());
     }
 
-    public static String gerarMatricula(UserTypeEnum tipoUsuario){
+    public static String gerarMatricula(UserTypeEnum tipoUsuario) {
         Integer matricula = (int) Math.floor(Math.random() * 99999);
-        return String.format("%d%04d%04d", tipoUsuario.getPrefixo(), Calendar.getInstance().get(Calendar.YEAR),matricula);
+        return String.format("%d%04d%04d", tipoUsuario.getPrefixo(), Calendar.getInstance().get(Calendar.YEAR),
+                matricula);
     }
 
 }
