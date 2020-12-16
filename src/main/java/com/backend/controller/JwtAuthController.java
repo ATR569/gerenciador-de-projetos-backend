@@ -88,7 +88,7 @@ public class JwtAuthController {
     private Professor getAsProfessor(Usuario obj) throws ApiException {
         Optional<Professor> p = professorRepository.findByMatricula(obj.getUsername());
 
-        if (p.isEmpty())
+        if (p == null)
             throw new UserNotFoundException(UserTypeEnum.USUARIO);
 
         return p.get();
@@ -97,7 +97,7 @@ public class JwtAuthController {
     private Aluno getAsAluno(Usuario obj) throws ApiException {
         Optional<Aluno> a = alunoRepository.findByMatricula(obj.getUsername());
 
-        if (a.isEmpty())
+        if (a == null)
             throw new UserNotFoundException(UserTypeEnum.USUARIO);
 
         return a.get();

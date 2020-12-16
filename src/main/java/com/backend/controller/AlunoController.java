@@ -127,7 +127,7 @@ public class AlunoController {
     protected Aluno findAlunoById(int id) throws ApiException{
         Optional<Aluno> a = alunoRepository.findById(id);
 
-        if (a.isEmpty())
+        if (a == null)
             throw new UserNotFoundException(UserTypeEnum.ALUNO);
 
         return a.get();

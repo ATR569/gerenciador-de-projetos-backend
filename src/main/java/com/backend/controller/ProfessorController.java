@@ -173,7 +173,7 @@ public class ProfessorController {
     protected Professor findProfessorById(int id) throws ApiException{
         Optional<Professor> a = professorRepository.findById(id);
 
-        if (a.isEmpty())
+        if (a == null)
             throw new UserNotFoundException(UserTypeEnum.PROFESSOR);
 
         return a.get();
