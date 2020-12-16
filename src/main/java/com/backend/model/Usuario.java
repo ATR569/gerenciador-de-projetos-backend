@@ -30,7 +30,7 @@ public class Usuario {
 
     public static String gerarMatricula(UserTypeEnum tipoUsuario) {
         Integer matricula = (int) Math.floor(Math.random() * 99999);
-        return String.format("%d%04d%04d", tipoUsuario.getPrefixo(), Calendar.getInstance().get(Calendar.YEAR),
+        return String.format("%02d%04d%05d", tipoUsuario.getPrefixo(), Calendar.getInstance().get(Calendar.YEAR),
                 matricula);
     }
 
